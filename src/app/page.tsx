@@ -4,6 +4,7 @@ import React, { useState } from "react";
 
 export default function Home() {
   const [repoName, setRepoName] = useState<string>("");
+  const [repoFileCount, setRepoFileCount] = useState<string>("");
 
   const submitForm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -16,6 +17,7 @@ export default function Home() {
       );
       const data = await response.json();
       setRepoName(data.name);
+      setRepoFileCount(data.count);
       formEl.reset();
     }
   };
@@ -25,7 +27,12 @@ export default function Home() {
         <input type="text" name="repoUrl" placeholder="GitHub repo URL" />
         <button type="submit">Analyze</button>
       </form>
-      {repoName && <p>Repo: {repoName}</p>}
+      {repoName && (
+        <div>
+          <p>Repo: {repoName}</p>
+          <p>File Count: {repoFileCount}</p>
+        </div>
+      )}
     </div>
   );
 }
