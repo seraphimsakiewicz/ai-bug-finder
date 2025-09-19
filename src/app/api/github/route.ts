@@ -1,4 +1,6 @@
 import { Octokit } from "@octokit/rest";
+import OpenAI from "openai";
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -40,12 +42,18 @@ export async function GET(request: Request) {
         fileResponse.data.content,
         "base64"
       ).toString();
-      console.log("fileContent", fileContent);
+      const aiResponse = await client.responses.create({
+        model: "gpt-5-nano",
+        input: `Analyze this code and identify potential bugs, code smells, or areas of concern. 
+        Keep it concise and simple for now.
+        \n\n\n ${fileContent}`,
+      });
+      return Response.json({
+        count: treeResponse.data.tree.length,
+        name: repoName,
+        analysis: aiResponse.output_text,
+        code: fileContent,
+      });
     }
   }
-
-  return Response.json({
-    count: treeResponse.data.tree.length,
-    name: repoName,
-  });
 }
