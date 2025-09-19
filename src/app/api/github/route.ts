@@ -32,11 +32,16 @@ export async function GET(request: Request) {
       repo: repoName,
       path: codeFile.path!,
     });
-    const fileContent = Buffer.from(
-      fileResponse.data.content,
-      "base64"
-    ).toString();
-    console.log("fileContent", fileContent);
+    if (
+      !Array.isArray(fileResponse.data) &&
+      fileResponse.data.type === "file"
+    ) {
+      const fileContent = Buffer.from(
+        fileResponse.data.content,
+        "base64"
+      ).toString();
+      console.log("fileContent", fileContent);
+    }
   }
 
   return Response.json({
