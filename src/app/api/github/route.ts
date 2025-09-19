@@ -16,6 +16,29 @@ export async function GET(request: Request) {
     recursive: "true",
   });
 
+  const codeFile = treeResponse.data.tree.find((file) => {
+    return (
+      file.type === "blob" &&
+      (file.path?.endsWith(".js") ||
+        file.path?.endsWith(".tsx") ||
+        file.path?.endsWith(".ts"))
+    );
+  });
+
+  console.log("codeFile", codeFile);
+  if (codeFile) {
+    const fileResponse = await octokit.rest.repos.getContent({
+      owner: repoOwner,
+      repo: repoName,
+      path: codeFile.path!,
+    });
+    const fileContent = Buffer.from(
+      fileResponse.data.content,
+      "base64"
+    ).toString();
+    console.log("fileContent", fileContent);
+  }
+
   return Response.json({
     count: treeResponse.data.tree.length,
     name: repoName,

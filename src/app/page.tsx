@@ -6,8 +6,9 @@ export default function Home() {
   const [repoName, setRepoName] = useState<string>("");
   const [repoFileCount, setRepoFileCount] = useState<string>("");
 
-  const submitForm = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submitRepoName = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // https://github.com/seraphimsakiewicz/evently
     const formEl = e.currentTarget;
     const formData = new FormData(formEl);
     const repoUrl = formData.get("repoUrl");
@@ -21,9 +22,10 @@ export default function Home() {
       formEl.reset();
     }
   };
+
   return (
     <div>
-      <form onSubmit={submitForm}>
+      <form onSubmit={submitRepoName}>
         <input type="text" name="repoUrl" placeholder="GitHub repo URL" />
         <button type="submit">Analyze</button>
       </form>
