@@ -2,11 +2,18 @@
 
 import React, { useState } from "react";
 
+type Bug = {
+  title: string;
+  description: string;
+  severity: "high" | "medium" | "low";
+  lineNumber: number;
+  filePath: string;
+};
+
 export default function Home() {
   const [repoName, setRepoName] = useState<string>("");
   const [repoFileCount, setRepoFileCount] = useState<string>("");
-  const [code, setCode] = useState<string>("");
-  const [analysis, setAnalysis] = useState<string>("");
+  const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const submitRepoName = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,8 +30,7 @@ export default function Home() {
       setLoading(false);
       setRepoName(data.name);
       setRepoFileCount(data.count);
-      setAnalysis(data.analysis);
-      setCode(data.code);
+      setBugs(data.bugs);
       formEl.reset();
     }
   };
@@ -32,7 +38,12 @@ export default function Home() {
   return (
     <div>
       <form onSubmit={submitRepoName}>
-        <input type="text" name="repoUrl" placeholder="GitHub repo URL" />
+        <input
+          type="text"
+          name="repoUrl"
+          // value="https://github.com/seraphimsakiewicz/evently"
+          placeholder="GitHub repo URL"
+        />
         <button type="submit">Analyze</button>
       </form>
       {loading ? (
@@ -41,8 +52,22 @@ export default function Home() {
         <div>
           <p>Repo: {repoName}</p>
           <p>File Count: {repoFileCount}</p>
-          <code>{code}</code>
-          <p>Analysis: {analysis}</p>
+          <div>
+            <h2>Bugs</h2>
+            {bugs.map((item) => {
+              return (
+                <div
+                  key={`${item.title.split("").join("-")}-${item.lineNumber}`}
+                >
+                  <p>Title:{item.title}</p>
+                  <p>Description:{item.description}</p>
+                  <p>severity:{item.severity}</p>
+                  <p>lineNumber:{item.lineNumber}</p>
+                  <p>File Path: {item.filePath}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

@@ -18,22 +18,26 @@ export async function GET(request: Request) {
     recursive: "true",
   });
 
-  const codeFile = treeResponse.data.tree.find((file) => {
-    return (
-      file.type === "blob" &&
-      (file.path?.endsWith(".js") ||
-        file.path?.endsWith(".tsx") ||
-        file.path?.endsWith(".ts"))
-    );
-  });
+  const codeFiles = treeResponse.data.tree
+    .filter((file) => {
+      return (
+        file.type === "blob" &&
+        (file.path?.endsWith(".js") ||
+          file.path?.endsWith(".tsx") ||
+          file.path?.endsWith(".ts"))
+      );
+    })
+    .slice(0, 3);
 
-  console.log("codeFile", codeFile);
-  if (codeFile) {
+  const allBugs = [];
+
+  for (const codeFile of codeFiles) {
     const fileResponse = await octokit.rest.repos.getContent({
       owner: repoOwner,
       repo: repoName,
       path: codeFile.path!,
     });
+
     if (
       !Array.isArray(fileResponse.data) &&
       fileResponse.data.type === "file"
@@ -44,16 +48,35 @@ export async function GET(request: Request) {
       ).toString();
       const aiResponse = await client.responses.create({
         model: "gpt-5-nano",
-        input: `Analyze this code and identify potential bugs, code smells, or areas of concern. 
-        Keep it concise and simple for now.
-        \n\n\n ${fileContent}`,
+        input: `Analyze this code for security vulnerabilities. If the code has no bugs return buggy:false, otherwise return buggy:true.
+         Return ONLY valid JSON in this format:
+  {
+    "bugs": [
+      {
+        "title": "Brief bug description",
+        "description": "Detailed explanation", 
+        "severity": "high|medium|low",
+        "lineNumber": 42
+        "filePath" ${codeFile.path}
+      }
+    ]
+      "buggy": true | false
+  }
+  
+  Code to analyze:
+  ${fileContent}`,
       });
-      return Response.json({
-        count: treeResponse.data.tree.length,
-        name: repoName,
-        analysis: aiResponse.output_text,
-        code: fileContent,
-      });
+      const bugsData = JSON.parse(aiResponse.output_text);
+      console.log("bugsData", bugsData);
+      allBugs.push(...bugsData.bugs);
     }
   }
+  console.log("allBugs", allBugs);
+  return Response.json({
+    count: treeResponse.data.tree.length,
+    name: repoName,
+    bugs: allBugs,
+    // analysis: aiResponse.output_text.bugs,
+    // code: fileContent,
+  });
 }
