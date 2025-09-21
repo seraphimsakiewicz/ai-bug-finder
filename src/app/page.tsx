@@ -41,7 +41,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 mt-12 max-w-7xl">
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
