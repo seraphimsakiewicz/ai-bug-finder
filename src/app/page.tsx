@@ -10,20 +10,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-type Bug = {
-  title: string;
-  description: string;
-  severity: "high" | "medium" | "low";
-  lineNumber: number;
-  filePath: string;
-};
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
-  const [repoName, setRepoName] = useState<string>("");
-  const [repoFileCount, setRepoFileCount] = useState<string>("");
-  const [bugs, setBugs] = useState<Bug[]>([]);
+  // const [repoName, setRepoName] = useState<string>("");
+  // const [repoFileCount, setRepoFileCount] = useState<string>("");
+  // const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [view, setView] = useState<"issues" | "code">("issues");
 
   const submitRepoName = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,13 +27,14 @@ export default function Home() {
     const formData = new FormData(formEl);
     const repoUrl = formData.get("repoUrl");
     if (typeof repoUrl === "string") {
-      const response = await fetch(
-        `/api/github?repoUrl=${encodeURIComponent(repoUrl)}`
-      );
-      const data = await response.json();
-      setRepoName(data.name);
-      setRepoFileCount(data.count);
-      setBugs(data.bugs);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // const response = await fetch(
+      //   `/api/github?repoUrl=${encodeURIComponent(repoUrl)}`
+      // );
+      // const data = await response.json();
+      // setRepoName(data.name);
+      // setRepoFileCount(data.count);
+      // setBugs(data.bugs);
       formEl.reset();
       setLoading(false);
     }
@@ -73,26 +68,23 @@ export default function Home() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div>
-          <p>Repo: {repoName}</p>
-          <p>File Count: {repoFileCount}</p>
-          <div>
-            <h2>Bugs</h2>
-            {bugs.map((item) => {
-              return (
-                <div
-                  key={`${item.title.split("").join("-")}-${item.lineNumber}`}
-                >
-                  <p>Title:{item.title}</p>
-                  <p>Description:{item.description}</p>
-                  <p>severity:{item.severity}</p>
-                  <p>lineNumber:{item.lineNumber}</p>
-                  <p>File Path: {item.filePath}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <Tabs
+          value={view}
+          onValueChange={(v) => setView(v as "issues" | "code")}
+        >
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="issues" className="gap-2">
+              Issues View
+            </TabsTrigger>
+            <TabsTrigger value="code" className="gap-2">
+              Code View
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="issues">Issues view hi</TabsContent>
+
+          <TabsContent value="code">Code view hi</TabsContent>
+        </Tabs>
       )}
     </div>
   );
