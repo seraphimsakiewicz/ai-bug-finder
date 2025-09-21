@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -42,6 +41,7 @@ export default function Home() {
       setRepoFileCount(data.count);
       setBugs(data.bugs);
       formEl.reset();
+      setLoading(false);
     }
   };
 
@@ -55,7 +55,7 @@ export default function Home() {
           <CardDescription>
             Enter a public GitHub repository URL to begin security analysis
           </CardDescription>
-          {/* <p>https://github.com/seraphimsakiewicz/evently</p> */}
+          <p>https://github.com/seraphimsakiewicz/evently</p>
         </CardHeader>
         <CardContent>
           <form className="flex gap-3" onSubmit={submitRepoName}>
