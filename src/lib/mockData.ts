@@ -1,15 +1,5 @@
 import { Bug } from "@/types/bug";
 
-/* export interface Bug {
-  id: string;
-  title: string;
-  description: string;
-  severity: "critical" | "high" | "medium" | "low";
-  lineNumbers: number[]; // e.g. [34,55]
-  filePath: string;
-  code: string[]; // e.g. ["line 1 of code goes here", "line 2 of code goes here"]
-  category?: string; // e.g., "injection", "xSS", etc.
-} */
 export const mockBugs: Bug[] = [
   {
     id: "1",
