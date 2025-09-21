@@ -1,6 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 type Bug = {
   title: string;
@@ -15,6 +25,7 @@ export default function Home() {
   const [repoFileCount, setRepoFileCount] = useState<string>("");
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
   const submitRepoName = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -27,7 +38,6 @@ export default function Home() {
         `/api/github?repoUrl=${encodeURIComponent(repoUrl)}`
       );
       const data = await response.json();
-      setLoading(false);
       setRepoName(data.name);
       setRepoFileCount(data.count);
       setBugs(data.bugs);
@@ -36,16 +46,30 @@ export default function Home() {
   };
 
   return (
-    <div>
-      <form onSubmit={submitRepoName}>
-        <input
-          type="text"
-          name="repoUrl"
-          // value="https://github.com/seraphimsakiewicz/evently"
-          placeholder="GitHub repo URL"
-        />
-        <button type="submit">Analyze</button>
-      </form>
+    <div className="container mx-auto px-4 py-12 max-w-4xl">
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Repository Analysis
+          </CardTitle>
+          <CardDescription>
+            Enter a public GitHub repository URL to begin security analysis
+          </CardDescription>
+          {/* <p>https://github.com/seraphimsakiewicz/evently</p> */}
+        </CardHeader>
+        <CardContent>
+          <form className="flex gap-3" onSubmit={submitRepoName}>
+            <Input
+              type="url"
+              name="repoUrl"
+              placeholder="https://github.com/username/repository"
+            />
+            <Button type="submit" disabled={loading}>
+              {loading ? "Analyzing..." : "Analyze"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
       {loading ? (
         <p>Loading...</p>
       ) : (
