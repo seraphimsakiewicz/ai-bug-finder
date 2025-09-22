@@ -11,13 +11,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockBugs } from "@/lib/mockData";
 import { Bug } from "@/types/bug";
 import { getSocket } from "@/lib/socket";
 
 export default function Home() {
   const [repoName, setRepoName] = useState<string>("");
-  const [repoFileCount, setRepoFileCount] = useState<string>("");
+  const [progressMessage, setProgressMessage] = useState<string>("");
+  const [scanCompleted, setScanCompleted] = useState<boolean>(false);
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [view, setView] = useState<"issues" | "code">("issues");
@@ -26,6 +26,11 @@ export default function Home() {
     const s = getSocket();
 
     const onConnect = () => console.log("socket connected:", s.id);
+
+    const onProgress = (payload: { message: string }) => {
+      setProgressMessage(payload.message);
+    };
+
     const onComplete = (payload: {
       name: string;
       bugs: Bug[];
@@ -35,20 +40,24 @@ export default function Home() {
       setRepoName(payload.name);
       setBugs(payload.bugs ?? []);
       setLoading(false);
+      setScanCompleted(true);
     };
     const onError = (e: Error) => {
       console.error("analysis-error", e);
       setLoading(false);
+      setScanCompleted(false);
     };
 
     s.on("connect", onConnect);
     s.on("analysis-complete", onComplete);
     s.on("analysis-error", onError);
+    s.on("analysis-progress", onProgress);
 
     return () => {
       s.off("connect", onConnect);
       s.off("analysis-complete", onComplete);
       s.off("analysis-error", onError);
+      s.off("analysis-progress", onProgress);
     };
   }, []);
 
@@ -62,11 +71,9 @@ export default function Home() {
     if (typeof repoUrl !== "string") {
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 3000));
     const s = getSocket();
     s.emit("analyze-repo", repoUrl);
     formEl.reset();
-    setLoading(false);
   };
 
   return (
@@ -95,8 +102,11 @@ export default function Home() {
         </CardContent>
       </Card>
       {loading ? (
-        <p>Loading...</p>
-      ) : (
+        <div>
+          <p>Loading...</p>
+          <p className="text-sm text-muted-foreground">{progressMessage}</p>
+        </div>
+      ) : scanCompleted ? (
         <Tabs
           value={view}
           onValueChange={(v) => setView(v as "issues" | "code")}
@@ -131,6 +141,10 @@ export default function Home() {
 
           <TabsContent value="code">Code view hi</TabsContent>
         </Tabs>
+      ) : (
+        <div className="text-center text-muted-foreground">
+          Enter a repository URL above to start scanning for security issues.
+        </div>
       )}
     </div>
   );
