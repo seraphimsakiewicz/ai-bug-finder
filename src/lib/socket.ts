@@ -4,9 +4,12 @@ let socket: Socket | null = null;
 
 export function getSocket() {
   if (!socket) {
-    socket = io("http://localhost:3001", {
-      transports: ["websocket"],
-    });
+    socket = io(
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001",
+      {
+        transports: ["websocket"],
+      }
+    );
   }
   return socket;
 }

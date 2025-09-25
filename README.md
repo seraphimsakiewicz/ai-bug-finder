@@ -21,7 +21,17 @@ cd ai-bug-finder
 pnpm install
 ```
 
-3. Start the development server:
+3. Set up environment variables (optional):
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` to point to your backend URL:
+```
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
+```
+
+4. Start the development server:
 ```bash
 pnpm dev
 ```
