@@ -46,17 +46,6 @@ interface CodeViewProps {
   onLeftPanelBugClick: (bug: Bug) => void;
 }
 
-// Helper function to get severity color
-const getSeverityColor = (bug: Bug) => {
-  // You can customize this based on bug severity if available
-  return {
-    icon: "text-red-500",
-    bg: "bg-red-500/20",
-    border: "border-red-500",
-    badge: "destructive" as const,
-  };
-};
-
 // Helper to get file name from path
 const getFileName = (path: string) => {
   return path.split("/").pop() || path;
@@ -86,15 +75,6 @@ export function CodeView({
     );
   };
 
-  // Modified onFileClick to clear selected bug
-  const handleFileClick = (filePath: string) => {
-    onFileClick(filePath);
-    // Clear selected bug when just clicking a file
-    if (selectedBug) {
-      onLeftPanelBugClick(null as any); // This should clear the selected bug
-    }
-  };
-
   return (
     <TooltipProvider>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[800px]">
@@ -119,34 +99,33 @@ export function CodeView({
                       key={fileIssue.filePath}
                       className="border border-border/50 rounded-lg overflow-hidden"
                     >
-                      {/* File Header */}
                       <Button
                         variant="ghost"
-                        className="w-full justify-start h-auto p-3 text-left hover:bg-accent/50 rounded-none"
+                        className="w-full justify-start h-auto p-3 text-left hover:bg-accent/50 rounded-none whitespace-normal"
                         disabled={loading || !scanCompleted}
                         onClick={() => onFileClick(fileIssue.filePath)}
                       >
-                        <div className="flex items-center gap-2 w-full">
+                        <div className="flex items-center gap-2 w-full overflow-hidden">
                           {expandedFiles.has(fileIssue.filePath) ? (
                             <ChevronDown className="h-4 w-4 flex-shrink-0" />
                           ) : (
                             <ChevronRight className="h-4 w-4 flex-shrink-0" />
                           )}
                           <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 overflow-hidden">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div>
-                                  <p className="font-semibold text-sm">
+                                  <p className="font-semibold text-sm truncate">
                                     {getFileName(fileIssue.filePath)}
                                   </p>
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-xs text-muted-foreground truncate">
                                     {getDirectory(fileIssue.filePath)}
                                   </p>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p className="font-mono text-xs">
+                                <p className="font-mono text-xs break-all">
                                   {fileIssue.filePath}
                                 </p>
                               </TooltipContent>
@@ -161,7 +140,6 @@ export function CodeView({
                           </div>
                         </div>
                       </Button>
-
                       {/* Nested Bugs */}
                       {expandedFiles.has(fileIssue.filePath) && (
                         <div className="border-t border-border/50 bg-muted/30">
@@ -173,7 +151,7 @@ export function CodeView({
                                   ? "secondary"
                                   : "ghost"
                               }
-                              className={`w-full justify-start h-auto p-3 text-left rounded-none hover:bg-accent/50 ${
+                              className={`w-full justify-start h-auto p-3 text-left rounded-none hover:bg-accent/50 whitespace-normal ${
                                 index !== fileIssue.bugs.length - 1
                                   ? "border-b border-border/30"
                                   : ""
@@ -181,14 +159,9 @@ export function CodeView({
                               disabled={loading || !scanCompleted}
                               onClick={() => onLeftPanelBugClick(bug)}
                             >
-                              <div className="flex items-start gap-2 w-full">
-                                <AlertTriangle
-                                  className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
-                                    getSeverityColor(bug).icon
-                                  }`}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium line-clamp-2">
+                              <div className="flex items-start gap-2 w-full overflow-hidden">
+                                <div className="flex-1 min-w-0 max-w-80">
+                                  <p className="text-sm font-medium line-clamp-2 break-words">
                                     {bug.title}
                                   </p>
                                   <p className="text-xs text-muted-foreground mt-1">
