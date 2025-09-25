@@ -31,7 +31,7 @@ export default function Home() {
     };
 
     const onFileAnalyzed = (payload: { filePath: string; bugs: Bug[] }) => {
-      console.log("file-analyzed", payload);
+      // console.log("file-analyzed", payload);
       setBugs((prevBugs) => [...prevBugs, ...payload.bugs]);
     };
 
@@ -83,10 +83,10 @@ export default function Home() {
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            Repository Analysis
+            Repository Analysisss
           </CardTitle>
           <CardDescription>
-            Enter a public GitHub repository URL to begin security analysis
+            Enter a public GitHubbb repository URL to begin security analysis
           </CardDescription>
           <p>https://github.com/seraphimsakiewicz/evently</p>
         </CardHeader>
@@ -115,7 +115,7 @@ export default function Home() {
               Bugs View
             </TabsTrigger>
             <TabsTrigger value="code" className="gap-2">
-              Code View
+              Code Viewww
             </TabsTrigger>
           </TabsList>
 
