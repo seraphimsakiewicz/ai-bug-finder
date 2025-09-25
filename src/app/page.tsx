@@ -46,6 +46,9 @@ export default function Home() {
   } | null>(null);
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
 
+  // update ui as u recieve bugs.
+  // in readme, say vertsion ur using such as node
+
   useEffect(() => {
     const s = getSocket();
 
@@ -221,6 +224,7 @@ export default function Home() {
         </div>
       ) : scanCompleted ? (
         <Tabs value={view} onValueChange={(v) => setView(v as "bugs" | "code")}>
+          {/* componentize each tabs content */}
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="bugs" className="gap-2">
               Bugs View
