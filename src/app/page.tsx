@@ -15,7 +15,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Bug } from "@/types/bug";
 import { getSocket } from "@/lib/socket";
-import { AlertTriangle, FileText, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  AlertTriangle,
+  FileText,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
 
 type FileIssue = {
   filePath: string;
@@ -35,7 +40,10 @@ export default function Home() {
   const [view, setView] = useState<"bugs" | "code">("bugs");
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
   const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
-  const [repoInfo, setRepoInfo] = useState<{owner: string, name: string} | null>(null);
+  const [repoInfo, setRepoInfo] = useState<{
+    owner: string;
+    name: string;
+  } | null>(null);
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -49,15 +57,25 @@ export default function Home() {
 
     const onFileAnalyzed = (payload: { filePath: string; bugs: Bug[] }) => {
       console.log("file-analyzed", payload);
-      setFileIssues((prev) => [...prev, payload]);
+      if (payload.bugs.length > 0) {
+        setFileIssues((prev) => [...prev, payload]);
+      } else {
+        console.log("no bugs found for file!", payload.filePath);
+      }
     };
 
-    const onFileContentReceived = (payload: { filePath: string; content: string }) => {
+    const onFileContentReceived = (payload: {
+      filePath: string;
+      content: string;
+    }) => {
       console.log("file-content-received", payload);
       setSelectedFile(payload);
     };
 
-    const onFileContentError = (payload: { filePath: string; error: string }) => {
+    const onFileContentError = (payload: {
+      filePath: string;
+      error: string;
+    }) => {
       console.error("file-content-error", payload);
     };
 
@@ -117,8 +135,8 @@ export default function Home() {
   };
 
   // Flatten bugs for Issues view
-  const allBugs = fileIssues.flatMap(file =>
-    file.bugs.map(bug => ({ ...bug, filePath: file.filePath }))
+  const allBugs = fileIssues.flatMap((file) =>
+    file.bugs.map((bug) => ({ ...bug, filePath: file.filePath }))
   );
 
   // Handle bug click - fetch file content and switch to code view
@@ -129,7 +147,7 @@ export default function Home() {
     setView("code");
 
     // Expand the file in the left panel
-    setExpandedFiles(prev => new Set([...prev, filePath]));
+    setExpandedFiles((prev) => new Set([...prev, filePath]));
 
     // Fetch file content if not already loaded or different file
     if (!selectedFile || selectedFile.filePath !== filePath) {
@@ -256,7 +274,9 @@ export default function Home() {
                                   <span className="font-mono">
                                     {bug.filePath}
                                   </span>
-                                  <span>Lines {bug.lines[0]}-{bug.lines[1]}</span>
+                                  <span>
+                                    Lines {bug.lines[0]}-{bug.lines[1]}
+                                  </span>
                                 </div>
                               </div>
 
@@ -304,7 +324,9 @@ export default function Home() {
                             <Button
                               variant="ghost"
                               className="w-full justify-start h-auto p-3 text-left"
-                              onClick={() => handleFileClick(fileIssue.filePath)}
+                              onClick={() =>
+                                handleFileClick(fileIssue.filePath)
+                              }
                             >
                               <div className="flex items-center gap-2 w-full">
                                 {expandedFiles.has(fileIssue.filePath) ? (
@@ -317,8 +339,12 @@ export default function Home() {
                                   <p className="font-mono text-sm truncate">
                                     {fileIssue.filePath}
                                   </p>
-                                  <Badge variant="outline" className="text-xs mt-1">
-                                    {fileIssue.bugs.length} issue{fileIssue.bugs.length !== 1 ? "s" : ""}
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs mt-1"
+                                  >
+                                    {fileIssue.bugs.length} issue
+                                    {fileIssue.bugs.length !== 1 ? "s" : ""}
                                   </Badge>
                                 </div>
                               </div>
@@ -330,7 +356,11 @@ export default function Home() {
                                 {fileIssue.bugs.map((bug) => (
                                   <Button
                                     key={bug.id}
-                                    variant={selectedBug?.id === bug.id ? "secondary" : "ghost"}
+                                    variant={
+                                      selectedBug?.id === bug.id
+                                        ? "secondary"
+                                        : "ghost"
+                                    }
                                     className="w-full justify-start h-auto p-2 text-left text-xs"
                                     onClick={() => handleLeftPanelBugClick(bug)}
                                   >
@@ -362,14 +392,19 @@ export default function Home() {
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <FileText className="h-5 w-5" />
                       {selectedFile ? (
-                        <span className="font-mono text-base">{selectedFile.filePath}</span>
+                        <span className="font-mono text-base">
+                          {selectedFile.filePath}
+                        </span>
                       ) : (
                         "Select a file to view code"
                       )}
                     </CardTitle>
                     {selectedFile && (
                       <CardDescription>
-                        {fileIssues.find(f => f.filePath === selectedFile.filePath)?.bugs.length || 0} security issues found
+                        {fileIssues.find(
+                          (f) => f.filePath === selectedFile.filePath
+                        )?.bugs.length || 0}{" "}
+                        security issues found
                       </CardDescription>
                     )}
                   </CardHeader>
@@ -377,49 +412,75 @@ export default function Home() {
                     <ScrollArea className="h-[600px]">
                       {selectedFile ? (
                         <div className="font-mono text-sm">
-                          {selectedFile.content.split('\n').map((line, index) => {
-                            const lineNumber = index + 1;
-                            const fileBugs = fileIssues.find(f => f.filePath === selectedFile.filePath)?.bugs || [];
-                            const lineHasBug = fileBugs.some(bug =>
-                              lineNumber >= bug.lines[0] && lineNumber <= bug.lines[1]
-                            );
-                            const isSelectedBugLine = selectedBug &&
-                              lineNumber >= selectedBug.lines[0] && lineNumber <= selectedBug.lines[1];
+                          {selectedFile.content
+                            .split("\n")
+                            .map((line, index) => {
+                              const lineNumber = index + 1;
+                              const fileBugs =
+                                fileIssues.find(
+                                  (f) => f.filePath === selectedFile.filePath
+                                )?.bugs || [];
+                              const lineHasBug = fileBugs.some(
+                                (bug) =>
+                                  lineNumber >= bug.lines[0] &&
+                                  lineNumber <= bug.lines[1]
+                              );
+                              const isSelectedBugLine =
+                                selectedBug &&
+                                lineNumber >= selectedBug.lines[0] &&
+                                lineNumber <= selectedBug.lines[1];
 
-                            return (
-                              <div
-                                key={lineNumber}
-                                className={`flex items-start gap-4 px-4 py-1 hover:bg-accent/30 ${
-                                  lineHasBug ? "bg-red-500/10 border-l-4 border-red-400" : ""
-                                } ${isSelectedBugLine ? "bg-primary/20" : ""}`}
-                              >
-                                <span className="text-muted-foreground w-12 text-right flex-shrink-0 select-none">
-                                  {lineNumber}
-                                </span>
-                                <div className="flex-1 min-w-0">
-                                  <code className="text-foreground whitespace-pre">{line}</code>
-                                  {lineHasBug && (
-                                    <div className="flex items-center gap-2 mt-1">
-                                      {fileBugs
-                                        .filter(bug => lineNumber >= bug.lines[0] && lineNumber <= bug.lines[1])
-                                        .map(bug => (
-                                          <div key={bug.id} className="flex items-center gap-1">
-                                            <AlertTriangle className="h-3 w-3 text-red-400" />
-                                            <span className="text-xs text-muted-foreground">{bug.title}</span>
-                                          </div>
-                                        ))
-                                      }
-                                    </div>
-                                  )}
+                              return (
+                                <div
+                                  key={lineNumber}
+                                  className={`flex items-start gap-4 px-4 py-1 hover:bg-accent/30 ${
+                                    lineHasBug
+                                      ? "bg-red-500/10 border-l-4 border-red-400"
+                                      : ""
+                                  } ${
+                                    isSelectedBugLine ? "bg-primary/20" : ""
+                                  }`}
+                                >
+                                  <span className="text-muted-foreground w-12 text-right flex-shrink-0 select-none">
+                                    {lineNumber}
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <code className="text-foreground whitespace-pre">
+                                      {line}
+                                    </code>
+                                    {lineHasBug && (
+                                      <div className="flex items-center gap-2 mt-1">
+                                        {fileBugs
+                                          .filter(
+                                            (bug) =>
+                                              lineNumber >= bug.lines[0] &&
+                                              lineNumber <= bug.lines[1]
+                                          )
+                                          .map((bug) => (
+                                            <div
+                                              key={bug.id}
+                                              className="flex items-center gap-1"
+                                            >
+                                              <AlertTriangle className="h-3 w-3 text-red-400" />
+                                              <span className="text-xs text-muted-foreground">
+                                                {bug.title}
+                                              </span>
+                                            </div>
+                                          ))}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
                         </div>
                       ) : (
                         <div className="p-8 text-center text-muted-foreground">
                           <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                          <p>Click on a file in the left panel to view its contents</p>
+                          <p>
+                            Click on a file in the left panel to view its
+                            contents
+                          </p>
                         </div>
                       )}
                     </ScrollArea>
@@ -440,7 +501,9 @@ export default function Home() {
                     {selectedBug ? (
                       <div className="space-y-4">
                         <div>
-                          <h3 className="font-semibold text-lg">{selectedBug.title}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {selectedBug.title}
+                          </h3>
                           <Badge variant="destructive" className="mt-2">
                             SECURITY ISSUE
                           </Badge>
@@ -459,11 +522,16 @@ export default function Home() {
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4" />
                               <span className="font-mono text-xs">
-                                {fileIssues.find(f => f.bugs.some(b => b.id === selectedBug.id))?.filePath}
+                                {
+                                  fileIssues.find((f) =>
+                                    f.bugs.some((b) => b.id === selectedBug.id)
+                                  )?.filePath
+                                }
                               </span>
                             </div>
                             <p className="text-muted-foreground">
-                              Lines: {selectedBug.lines[0]} - {selectedBug.lines[1]}
+                              Lines: {selectedBug.lines[0]} -{" "}
+                              {selectedBug.lines[1]}
                             </p>
                           </div>
                         </div>
@@ -471,7 +539,9 @@ export default function Home() {
                         <div>
                           <h4 className="font-semibold mb-2">Recommendation</h4>
                           <p className="text-sm text-muted-foreground">
-                            Review and fix the security vulnerability. Consider implementing proper input validation, access controls, or other security best practices.
+                            Review and fix the security vulnerability. Consider
+                            implementing proper input validation, access
+                            controls, or other security best practices.
                           </p>
                         </div>
                       </div>
