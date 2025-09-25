@@ -45,6 +45,10 @@ export default function Home() {
     name: string;
   } | null>(null);
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
+  const [scanStartTime, setScanStartTime] = useState<Date | null>(null);
+  const [scanCompletionTime, setScanCompletionTime] = useState<Date | null>(
+    null
+  );
 
   // update ui as u recieve bugs.
   // in readme, say vertsion ur using such as node
@@ -84,8 +88,10 @@ export default function Home() {
 
     const onComplete = (payload: { name: string; count: number }) => {
       console.log("analysis-complete", payload);
+      const completionTime = new Date();
       setLoading(false);
       setScanCompleted(true);
+      setScanCompletionTime(completionTime);
     };
     const onError = (e: Error) => {
       console.error("analysis-error", e);
@@ -119,6 +125,8 @@ export default function Home() {
     setSelectedBug(null);
     setLoading(true);
     setScanCompleted(false);
+    setScanStartTime(new Date());
+    setScanCompletionTime(null);
 
     const formEl = e.currentTarget;
     const formData = new FormData(formEl);
@@ -192,6 +200,19 @@ export default function Home() {
     setSelectedBug(bug);
   };
 
+  // Format elapsed time helper
+  const formatElapsedTime = (startTime: Date, endTime: Date): string => {
+    const diffMs = endTime.getTime() - startTime.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(diffSeconds / 60);
+    const seconds = diffSeconds % 60;
+
+    if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    }
+    return `${seconds}s`;
+  };
+
   return (
     <div className="container mx-auto px-4 mt-12 max-w-7xl">
       <Card className="mb-8">
@@ -217,40 +238,100 @@ export default function Home() {
           </form>
         </CardContent>
       </Card>
-      {loading ? (
-        <div>
-          <p>Loading...</p>
-          <p className="text-sm text-muted-foreground">{progressMessage}</p>
+      {/* Blue-bordered loading indicator */}
+      {loading && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                Analysis in progress...
+              </p>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                {progressMessage || "Scanning repository for security issues"}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                {allBugs.length} bugs found
+              </p>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                {fileIssues.length} files with issues
+              </p>
+            </div>
+          </div>
         </div>
-      ) : scanCompleted ? (
+      )}
+
+      {/* Green completion banner */}
+      {scanCompleted && scanStartTime && scanCompletionTime && repoInfo && (
+        <div className="mb-6 p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                Scanned {scanCompletionTime.toLocaleDateString()}{" "}
+                {scanCompletionTime.toLocaleTimeString()}
+              </p>
+              <p className="text-xs text-green-700 dark:text-green-300">
+                https://github.com/{repoInfo.owner}/{repoInfo.name}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-semibold text-green-900 dark:text-green-100">
+                Completed in{" "}
+                {formatElapsedTime(scanStartTime, scanCompletionTime)}
+              </p>
+              <p className="text-xs text-green-700 dark:text-green-300">
+                {allBugs.length} bugs found in {fileIssues.length} files
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {scanCompleted || fileIssues.length > 0 ? (
         <Tabs value={view} onValueChange={(v) => setView(v as "bugs" | "code")}>
           {/* componentize each tabs content */}
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="bugs" className="gap-2">
               Bugs View
             </TabsTrigger>
-            <TabsTrigger value="code" className="gap-2">
+            <TabsTrigger
+              value="code"
+              className="gap-2"
+              disabled={loading || !scanCompleted}
+            >
               Code View
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="bugs">
             <div className="space-y-6">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Bugs</h2>
-              </div>
-
               {/* Bugs List */}
               <div className="border rounded-lg">
                 {allBugs.length === 0 ? (
                   <div className="p-8 text-center">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      No bugs found
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Great! No security bugs were detected in this repository.
-                    </p>
+                    {loading && !scanCompleted ? (
+                      <>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                          No bugs found yet
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Analysis is still running. Bugs will appear here as
+                          they&apos;re detected.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                          No bugs found
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Great! No security bugs were detected in this
+                          repository.
+                        </p>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="divide-y">
@@ -258,7 +339,12 @@ export default function Home() {
                       <div
                         key={`${bug.id}-${index}`}
                         className="p-4 hover:bg-accent/50 transition-colors cursor-pointer group"
-                        onClick={() => handleBugClick(bug, bug.filePath)}
+                        aria-disabled={loading || !scanCompleted}
+                        onClick={() =>
+                          !loading &&
+                          scanCompleted &&
+                          handleBugClick(bug, bug.filePath)
+                        }
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 mt-1">
@@ -317,6 +403,7 @@ export default function Home() {
                     </CardTitle>
                     <CardDescription>
                       {fileIssues.length} files contain security issues
+                      {loading && !scanCompleted && " (analysis ongoing)"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -328,6 +415,7 @@ export default function Home() {
                             <Button
                               variant="ghost"
                               className="w-full justify-start h-auto p-3 text-left"
+                              disabled={loading || !scanCompleted}
                               onClick={() =>
                                 handleFileClick(fileIssue.filePath)
                               }
@@ -366,6 +454,7 @@ export default function Home() {
                                         : "ghost"
                                     }
                                     className="w-full justify-start h-auto p-2 text-left text-xs"
+                                    disabled={loading || !scanCompleted}
                                     onClick={() => handleLeftPanelBugClick(bug)}
                                   >
                                     <div className="flex items-center gap-2 w-full">
