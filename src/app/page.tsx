@@ -49,7 +49,11 @@ export default function Home() {
       setProgressMessage(payload.message);
     };
 
-    const onFileAnalyzed = (payload: { filePath: string; bugs: Bug[], id: string }) => {
+    const onFileAnalyzed = (payload: {
+      filePath: string;
+      bugs: Bug[];
+      id: string;
+    }) => {
       console.log("file-analyzed", payload);
       if (payload.bugs.length > 0) {
         setFileIssues((prev) => [...prev, payload]);
@@ -222,7 +226,7 @@ export default function Home() {
     }
     return `${seconds}s`;
   };
-
+  //
   return (
     <div className="container mx-auto px-4 mt-12 max-w-7xl">
       <Card className="mb-8">
