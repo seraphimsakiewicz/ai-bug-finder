@@ -238,10 +238,10 @@ export function CodeView({
                         >
                           {/* Line with border indicator for bugs */}
                           <div
-                            className={`flex items-start gap-4 px-4 py-0.5 ${
+                            className={`flex items-start gap-4 py-0.5 ${
                               overlappingBugs.length > 0
-                                ? "border-l-4 border-red-500"
-                                : ""
+                                ? "border-l-4 border-red-500 px-[2px]"
+                                : "px-[6px]"
                             }`}
                           >
                             <span className="text-muted-foreground w-12 text-right flex-shrink-0 select-none text-xs">
@@ -252,43 +252,6 @@ export function CodeView({
                                 <code>{line || " "}</code>
                               </pre>
                             </div>
-                            {/* Bug indicators on the right */}
-                            {overlappingBugs.length > 0 && (
-                              <div className="flex items-center gap-1 pr-2">
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <div className="flex items-center gap-1">
-                                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                                      {overlappingBugs.length > 1 && (
-                                        <Badge
-                                          variant="destructive"
-                                          className="text-xs px-1 py-0"
-                                        >
-                                          {overlappingBugs.length}
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-sm">
-                                    <div className="space-y-2">
-                                      {overlappingBugs.map((bug, idx) => (
-                                        <div key={bug.id}>
-                                          {idx > 0 && (
-                                            <hr className="border-border/50" />
-                                          )}
-                                          <p className="font-semibold text-sm">
-                                            {bug.title}
-                                          </p>
-                                          <p className="text-xs text-muted-foreground">
-                                            Lines {bug.lines[0]}-{bug.lines[1]}
-                                          </p>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            )}
                           </div>
                         </div>
                       );
