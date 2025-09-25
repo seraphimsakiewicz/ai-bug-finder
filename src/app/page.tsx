@@ -233,7 +233,6 @@ export default function Home() {
           <CardDescription>
             Enter a public GitHub repository URL to begin security analysis
           </CardDescription>
-          <p>https://github.com/seraphimsakiewicz/evently</p>
         </CardHeader>
         <CardContent>
           <form className="flex gap-3" onSubmit={submitRepoName}>
