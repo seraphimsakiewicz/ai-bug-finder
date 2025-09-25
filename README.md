@@ -4,6 +4,8 @@ A modern web application for finding and analyzing bugs in codebases using AI-po
 
 **Note**: This frontend application requires the [ai-bug-finder-backend](https://github.com/seraphimsakiewicz/ai-bug-finder-backend) repository to be running for full functionality.
 
+## Project is deployed [here](https://ai-bug-finder-beta.vercel.app/)
+
 ## Prerequisites
 
 - **Node.js**: >= 22.6.0 (required for backend's `--experimental-strip-types` support)
