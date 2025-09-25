@@ -15,10 +15,12 @@ import { Bug } from "@/types/bug";
 import { getSocket } from "@/lib/socket";
 import { BugsView } from "@/components/BugsView";
 import { CodeView } from "@/components/CodeView";
+import { data } from "@/lib/mockdata";
 
 type FileIssue = {
   filePath: string;
   bugs: Bug[];
+  id: string;
 };
 
 type SelectedFile = {
@@ -28,8 +30,9 @@ type SelectedFile = {
 
 export default function Home() {
   const [progressMessage, setProgressMessage] = useState<string>("");
-  const [scanCompleted, setScanCompleted] = useState<boolean>(false);
-  const [fileIssues, setFileIssues] = useState<FileIssue[]>([]);
+  // temp
+  const [scanCompleted, setScanCompleted] = useState<boolean>(true);
+  const [fileIssues, setFileIssues] = useState<FileIssue[]>(data);
   const [loading, setLoading] = useState<boolean>(false);
   const [view, setView] = useState<"bugs" | "code">("bugs");
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
@@ -37,7 +40,10 @@ export default function Home() {
   const [repoInfo, setRepoInfo] = useState<{
     owner: string;
     name: string;
-  } | null>(null);
+  } | null>({
+    owner: "seraphimsakiewicz",
+    name: "evently",
+  });
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
   const [scanStartTime, setScanStartTime] = useState<Date | null>(null);
   const [scanCompletionTime, setScanCompletionTime] = useState<Date | null>(
@@ -86,6 +92,7 @@ export default function Home() {
       setLoading(false);
       setScanCompleted(true);
       setScanCompletionTime(completionTime);
+      console.log("all issues", fileIssues);
     };
     const onError = (e: Error) => {
       console.error("analysis-error", e);
@@ -140,12 +147,14 @@ export default function Home() {
   };
 
   // Flatten bugs for Issues view
+  console.log("fileIssues", fileIssues);
   const allBugs = fileIssues.flatMap((file) =>
     file.bugs.map((bug) => ({ ...bug, filePath: file.filePath }))
   );
 
   // Handle bug click - fetch file content and switch to code view
   const handleBugClick = (bug: Bug, filePath: string) => {
+    
     if (!repoInfo) return;
 
     setSelectedBug(bug);
@@ -167,6 +176,10 @@ export default function Home() {
 
   // Handle file click in code view
   const handleFileClick = (filePath: string) => {
+    if (selectedFile?.filePath !== filePath) {
+      setSelectedBug(null);
+    }
+
     if (!repoInfo) return;
 
     // Toggle expanded state
