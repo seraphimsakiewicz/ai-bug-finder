@@ -205,6 +205,23 @@ export default function Home() {
   // Handle bug click in left panel
   const handleLeftPanelBugClick = (bug: Bug) => {
     setSelectedBug(bug);
+
+    // Find which file this bug belongs to
+    const bugFile = fileIssues.find(fileIssue =>
+      fileIssue.bugs.some(fileBug => fileBug.id === bug.id)
+    );
+
+    if (!bugFile || !repoInfo) return;
+
+    // If the bug is from a different file than currently selected, fetch that file's content
+    if (!selectedFile || selectedFile.filePath !== bugFile.filePath) {
+      const s = getSocket();
+      s.emit("get-file-content", {
+        repoOwner: repoInfo.owner,
+        repoName: repoInfo.name,
+        filePath: bugFile.filePath,
+      });
+    }
   };
 
   // Format elapsed time helper
