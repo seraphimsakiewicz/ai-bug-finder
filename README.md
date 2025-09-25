@@ -12,7 +12,7 @@ A modern web application for finding and analyzing bugs in codebases using AI-po
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/seraphimsakiewicz/ai-bug-finder
 cd ai-bug-finder
 ```
 
