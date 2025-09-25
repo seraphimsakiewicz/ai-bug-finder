@@ -11,28 +11,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bug } from "@/types/bug";
+import { Bug, FileIssue, SelectedFile } from "@/types";
 import { getSocket } from "@/lib/socket";
 import { BugsView } from "@/components/BugsView";
 import { CodeView } from "@/components/CodeView";
-import { data } from "@/lib/mockdata";
-
-type FileIssue = {
-  filePath: string;
-  bugs: Bug[];
-  id: string;
-};
-
-type SelectedFile = {
-  filePath: string;
-  content: string;
-};
+// import { data } from "@/lib/mockdata";
 
 export default function Home() {
   const [progressMessage, setProgressMessage] = useState<string>("");
-  // temp
-  const [scanCompleted, setScanCompleted] = useState<boolean>(true);
-  const [fileIssues, setFileIssues] = useState<FileIssue[]>(data);
+  const [scanCompleted, setScanCompleted] = useState<boolean>(false);
+  const [fileIssues, setFileIssues] = useState<FileIssue[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [view, setView] = useState<"bugs" | "code">("bugs");
   const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
@@ -50,7 +38,6 @@ export default function Home() {
     null
   );
 
-  // update ui as u recieve bugs.
   // in readme, say vertsion ur using such as node
 
   useEffect(() => {
@@ -62,7 +49,7 @@ export default function Home() {
       setProgressMessage(payload.message);
     };
 
-    const onFileAnalyzed = (payload: { filePath: string; bugs: Bug[] }) => {
+    const onFileAnalyzed = (payload: { filePath: string; bugs: Bug[], id: string }) => {
       console.log("file-analyzed", payload);
       if (payload.bugs.length > 0) {
         setFileIssues((prev) => [...prev, payload]);
@@ -117,7 +104,7 @@ export default function Home() {
       s.off("analysis-error", onError);
       s.off("analysis-progress", onProgress);
     };
-  }, []);
+  });
 
   const submitRepoName = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -154,7 +141,6 @@ export default function Home() {
 
   // Handle bug click - fetch file content and switch to code view
   const handleBugClick = (bug: Bug, filePath: string) => {
-    
     if (!repoInfo) return;
 
     setSelectedBug(bug);
@@ -207,8 +193,8 @@ export default function Home() {
     setSelectedBug(bug);
 
     // Find which file this bug belongs to
-    const bugFile = fileIssues.find(fileIssue =>
-      fileIssue.bugs.some(fileBug => fileBug.id === bug.id)
+    const bugFile = fileIssues.find((fileIssue) =>
+      fileIssue.bugs.some((fileBug) => fileBug.id === bug.id)
     );
 
     if (!bugFile || !repoInfo) return;

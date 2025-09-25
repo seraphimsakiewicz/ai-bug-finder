@@ -9,9 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Bug } from "@/types/bug";
+import { Bug, FileIssue } from "@/types";
 import {
-  AlertTriangle,
   FileText,
   ChevronRight,
   ChevronDown,
@@ -24,11 +23,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-type FileIssue = {
-  filePath: string;
-  bugs: Bug[];
-};
 
 type SelectedFile = {
   filePath: string;
@@ -96,7 +90,7 @@ export function CodeView({
                 <div className="p-4 space-y-3">
                   {fileIssues.map((fileIssue) => (
                     <div
-                      key={fileIssue.filePath}
+                      key={fileIssue.id}
                       className="border border-border/50 rounded-lg overflow-hidden"
                     >
                       <Button

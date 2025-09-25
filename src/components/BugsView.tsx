@@ -1,5 +1,5 @@
 import React from "react";
-import { Bug } from "@/types/bug";
+import { Bug } from "@/types";
 
 interface BugsViewProps {
   allBugs: (Bug & { filePath: string })[];
@@ -8,7 +8,12 @@ interface BugsViewProps {
   onBugClick: (bug: Bug, filePath: string) => void;
 }
 
-export function BugsView({ allBugs, loading, scanCompleted, onBugClick }: BugsViewProps) {
+export function BugsView({
+  allBugs,
+  loading,
+  scanCompleted,
+  onBugClick,
+}: BugsViewProps) {
   return (
     <div className="space-y-6">
       <div className="border rounded-lg">
@@ -30,8 +35,7 @@ export function BugsView({ allBugs, loading, scanCompleted, onBugClick }: BugsVi
                   No bugs found
                 </h3>
                 <p className="text-muted-foreground">
-                  Great! No security bugs were detected in this
-                  repository.
+                  Great! No security bugs were detected in this repository.
                 </p>
               </>
             )}
@@ -44,9 +48,7 @@ export function BugsView({ allBugs, loading, scanCompleted, onBugClick }: BugsVi
                 className="p-4 hover:bg-accent/50 transition-colors cursor-pointer group"
                 aria-disabled={loading || !scanCompleted}
                 onClick={() =>
-                  !loading &&
-                  scanCompleted &&
-                  onBugClick(bug, bug.filePath)
+                  !loading && scanCompleted && onBugClick(bug, bug.filePath)
                 }
               >
                 <div className="flex items-start gap-3">
@@ -64,9 +66,7 @@ export function BugsView({ allBugs, loading, scanCompleted, onBugClick }: BugsVi
                           {bug.description}
                         </p>
                         <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span className="font-mono">
-                            {bug.filePath}
-                          </span>
+                          <span className="font-mono">{bug.filePath}</span>
                           <span>
                             Lines {bug.lines[0]}-{bug.lines[1]}
                           </span>
